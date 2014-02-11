@@ -1,0 +1,49 @@
+Predictia semnalelor utilizand metoda nearest neighbors
+
+Niculaescu Oana 341C1
+
+structura proiectului:
+    I : functiile de predictie a semnalului si reconstructie a atractorului
+    II: serviciul web si apelarea functionalitatilor deja implementate
+
+Continut arhiva:
+	WebKNN - sursele atat pentru aplicatia propriu-zisa cat si pentru	aplicatia web
+ 	deploy.sh - scriptul de make, unde se realizeaza compilarea aplicatiei intr-o aplicatie .war
+ 	README - acest fisier
+ 	KNN.pdf - prezentarea pdf din cadrul laboratorului
+
+I: functiile de predictie a semnalului
+
+- clase folosite:
+    MainKNN - clasa principala unde se realizeaza calculu    
+              embedding dimension si predictia noilor valori
+    NDimVec - clasa ajutatoare, reprezinta un vector N dimensional  
+              de vectori
+    KNeighbours - clasa ajutatoare, reprezinta un vector de vecini 
+                  cu valorile vecinilor si distantele pana la acestia
+- determinarea minimum embedding dimension: calculez numarul de false nearest neighbours (FNN) pentru fiecare valoare de embedding dimension intre 1 si o valoare maxima data, 10 in acest caz; pentru fiecare dimensiune d, se construiesc vectori de dimensiune d ce reprezinta secvente de d elemente de pe pozitii consecutive din seria initiala; se calculeaza distantele euclidiene dintre acesti vectori si apoi se verifica FNN, determinandu-se m
+- constructia predictorului utilizand k-nearest-neighbors: se ia o secventa formata din ultimele m valori din serie si se doreste predictia valorii m+1; pentru aceasta se identifica k secvente similare pentru care m+1 este cunoscuta, cele k secvente similare sunt cei mai apropiati k vecini (vecinii cei mai apropiati in distante euclidiene); se face o medie ponderata a valorilor acestor k+1 vecini si se afla m+1
+- impartirea datelor de intrare in 2 parti egale, prima jumatate este folosita ca training set pentru antrenarea predictorului, iar cealalta jumatate ca test set; pe masura ce datele de test sunt parcurse valorile sunt adaugate in predictor(asa cum cere algoritmul)
+- predictia valorilor si aflarea erorii patratice medii
+
+II: serviciul web si apelarea functionalitatilor deja implementate
+
+ serviciul web a fost implementat ca o aplicatie Java .war folosind WebServlets si serverul web Jetty
+- exista mai multe metode de utilizare a aplicatiei web:
+    utilizarea interfetei grafice si accesarea proiectului in browser la adresa http://127.0.0.1:8080/knn-demo/  de unde se incarca un fisier de test, se face o cerere de tip HTTP POST catre servlet-ul Upload care va salva fisierul intr-un fisier temporar in /tmp/request.txt
+    in momentul in care se face submit cererii, esti redirectat catre o alta pagina unde este prezentat un fisier in format png, un grafic cu cele 2 seturi de valori, valorile reale si cele prezise, fisierul folosit este cel din /tmp/req.txt incarcat anterior
+    se poate accesa si un serviciu extern, un client extern poate accesa serviciul web la adresa http://127.0.0.1:8080/knn-demo/fnn/, are aceeasi functionare ca si pagina de vizualizare a graficului, se foloseste tot fisierul din /tmp/req.txt daca primeste un parametru in cererea de tipul HTTP GET se va folosi file_name=/cale/catre/fisier; FNNService va intoarce un JSON ce contine meanSquaredError si valorile prezise si cele dorite ce vor fi parsate in pagina
+
+MOD DE UTILIZARE:
+	se apeleaza scriptul deploy.sh ca utilizator root
+	
+Pentru a putea rula scriptul deploy.sh trebuie instalat ant pentru compilare si serverul web Jetty. Se pot introduce urmatoarele comenzi:
+	sudo apt-get install ant
+	sudo apt-get install jetty
+	sudo chmod a+x deploy.sh
+	sudo ./deploy.sh
+	
+	in browser se apeleaza:
+	http://127.0.0.1:8080/knn-demo/
+
+Proiectul se compileaza si ruleaza pe un sistem de operare Linux. Eu am compilat si rulat pe Ubuntu 13.04 .
